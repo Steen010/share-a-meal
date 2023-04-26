@@ -1,25 +1,17 @@
-let database = {
-    users :[
-        {
-            id: 1,
-            firstName: 'Koen',
-            lastName: 'Steen',
-            emailAddress:'kjh.vansteen@student.avans.nl'
-            // hier de overige velden uit het FO
-        },
-        {
-            id: 2,
-            firstName: 'Robin',
-            lastName: 'Schellius',
-            emailAddress:'r.schellius@avans.nl'
-        },
-        {
-            id: 3,
-            firstName: 'Davide',
-            lastName: 'Ambesi',
-            emailAddress: 'd.ambesi@avans.nl'
-        }  
-    ],
-};
+// get the client
+const database = require('mysql2');
+
+// Create the connection pool. The pool-specific settings are the defaults
+const pool = mysql.createPool({
+  host: 'localhost',
+  user: 'root',
+  database: 'shareameal',
+  port: 3306,
+  waitForConnections: true,
+  connectionLimit: 10,
+  maxIdle: 10, // max idle connections, the default value is the same as `connectionLimit`
+  idleTimeout: 60000, // idle connections timeout, in milliseconds, the default value 60000
+  queueLimit: 0
+});
 
 module.exports = database;
