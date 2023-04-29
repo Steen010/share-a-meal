@@ -31,15 +31,26 @@ app.get('/api/info', (req, res) => {
 //this goes to a route, see src/routes/user.routes.js
 app.use('/api/user', userRoutes);
 
-app.use((req, res, next) => {
-    const url = req.originalUrl;
-    console.log(`404-handler called for URL: ${url}`);
+// Wanneer geen enkele endpoint matcht kom je hier terecht. Dit is dus
+// een soort 'afvoerputje' (sink) voor niet-bestaande URLs in de server.
+app.use('*', (req, res) => {
+    logger.warn('Invalid endpoint called: ', req.path);
     res.status(404).json({
-        status: 404,
-        message: 'Not Found',
-        data: {},
+      status: 404,
+      message: 'Endpoint not found',
+      data: {}
     });
-});
+  });
+  
+  // Express error handler
+  app.use((err, req, res, next) => {
+    logger.error(err.code, err.message);
+    res.status(err.code).json({
+      statusCode: err.code,
+      message: err.message,
+      data: {}
+    });
+  });
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)

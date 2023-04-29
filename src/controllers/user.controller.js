@@ -1,22 +1,22 @@
 const assert = require('assert');
 const logger = require('../util/utils').logger;
-const database = require('../util/database');
-
-let index = database.users.length;
+const pool = require('../util/database');
 
 const userController = {
     getAllUsers: (req, res) =>{
         try{
-            logger.info('Get all users');
+            // logger.info('Get all users');
             
-            let sqlStatement = 'SELECT * FROM `user`';
+            let sqlStatement = 'SELECT * FROM `user`;';
             // Hier wil je misschien iets doen met mogelijke filterwaarden waarop je zoekt.
             if (req.query.isactive) {
               // voeg de benodigde SQL code toe aan het sql statement
               // bv sqlStatement += " WHERE `isActive=?`"
-            }
-            
+            };
+           
             pool.getConnection(function (err, conn) {
+                console.log('Werkt')
+
               // Do something with the connection
               if (err) {
                 console.log('error', err);
@@ -59,14 +59,14 @@ const userController = {
             assert(typeof firstName === 'string', 'firstName must be string')
             assert(typeof lastName === 'string', 'lastName must be string')
             assert(typeof emailAddress === 'string', 'emailAddress must be string')
-            index = database.index + 1;
+            index = pool.index + 1;
             newUser = {
                 id: index,
                 firstName: firstName,
                 lastName: lastName,
                 emailAddress: emailAddress,
             };
-            database.users.push(newUser);
+            pool.users.push(newUser);
             res.status(201).json({
                 status: 201,
                 message: `User met ID ${index} is toegevoegd`,
@@ -82,7 +82,7 @@ const userController = {
     },
     getUser: (req, res) => {
         let userId = req.params.userId;
-        let user = database.users.filter((item) => item.id == userId);
+        let user = pool.users.filter((item) => item.id == userId);
         if(user[0]) {
             res.status(200).json({
                 status: 200,
@@ -101,7 +101,7 @@ const userController = {
         try {
 
         assert(typeof emailaddress === 'string', 'emailAddress must be a string');
-        const userIndex = database.users.findIndex(
+        const userIndex = pool.users.findIndex(
             
             (user) => user.emailaddress === emailaddress
             );
@@ -135,7 +135,7 @@ const userController = {
     updateUser : (req, res) => {
         try {
             const { emailaddress, firstName, lastName } = req.body;
-            const userIndex = database.users.findIndex(
+            const userIndex = pool.users.findIndex(
             (user) => user.emailaddress === emailaddress
             );
             
@@ -158,8 +158,8 @@ const userController = {
             if (firstname) user.firstname = firstname;
             if (lastname) user.lastname = lastname;
             
-            // Sla de bijgewerkte gebruiker op in de database
-            database.users[userIndex] = user;
+            // Sla de bijgewerkte gebruiker op in de pool
+            pool.users[userIndex] = user;
             res.status(200).json({
                 status: 200,
                 message: 'Gebruiker is met succes bijgewerkt',
@@ -179,10 +179,10 @@ const userController = {
     },
     deleteUser: (req, res) => {
         let userId = req.params.userId;
-        let user = database.users.filter((item) => item.id == userId);
+        let user = pool.users.filter((item) => item.id == userId);
         
         if(user[0]) {
-            database.users.splice(user.id - 1);
+            pool.users.splice(user.id - 1);
             res.status(200).json({
                 status: 200,
                 message: `User met ID ${userId} is verwijderd`,
