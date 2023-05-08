@@ -1,56 +1,46 @@
-const assert = require('assert');
+const assert = require('assert')
 const logger = require('../util/utils').logger;
 const pool = require('../util/database');
 
 const userController = {
-    getAllUsers: (req, res) =>{
-        try{
-            // logger.info('Get all users');
-            
-            let sqlStatement = 'SELECT * FROM `user`;';
-            // Hier wil je misschien iets doen met mogelijke filterwaarden waarop je zoekt.
-            if (req.query.isactive) {
-              // voeg de benodigde SQL code toe aan het sql statement
-              // bv sqlStatement += " WHERE `isActive=?`"
-            };
-           
-            pool.getConnection(function (err, conn) {
-                console.log('Werkt')
-
-              // Do something with the connection
+    getAllUsers: (req, res, next) => {
+        logger.info('Get all users');
+    
+        let sqlStatement = 'SELECT * FROM `user`';
+        // Hier wil je misschien iets doen met mogelijke filterwaarden waarop je zoekt.
+        if (req.query.isactive) {
+          // voeg de benodigde SQL code toe aan het sql statement
+          // bv sqlStatement += " WHERE `isActive=?`"
+        }
+        
+        pool.getConnection(function (err, conn) {
+          // Do something with the connection
+          if (err) {
+            console.log('error', err);
+            next('error: ' + err.message);
+          }
+          if (conn) {
+            conn.query(sqlStatement, function (err, results, fields) {
               if (err) {
-                console.log('error', err);
-                next('error: ' + err.message);
-              }
-              if (conn) {
-                conn.query(sqlStatement, function (err, results, fields) {
-                  if (err) {
-                    logger.err(err.message);
-                    next({
-                      code: 409,
-                      message: err.message
-                    });
-                  }
-                  if (results) {
-                    logger.info('Found', results.length, 'results');
-                    res.status(200).json({
-                      statusCode: 200,
-                      message: 'User getAll endpoint',
-                      data: results
-                    });
-                  }
+                logger.info(err.message);
+                next({
+                  code: 409,
+                  message: err.message
                 });
-                pool.releaseConnection(conn);
+              }
+              if (results) {
+                logger.info('Found', results.length, 'results');
+                res.status(200).json({
+                  statusCode: 200,
+                  message: 'User getAll endpoint',
+                  data: results
+                });
               }
             });
-        } catch(err) {
-            res.status(400).json({
-                status: 400,
-                message: 'Lijst van gebruikers is niet gevonden',
-                data: {},
-            })
-        }
-    },
+            pool.releaseConnection(conn);
+          }
+        });
+      },
     createUser: (req, res) =>{
         let newUser = req.body;
         let {firstName, lastName, emailAddress} = req.body;

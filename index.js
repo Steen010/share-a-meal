@@ -3,6 +3,7 @@ const port = 3000;
 const assert = require('assert');
 const app = express();
 const userRoutes = require('./src/routes/user.routes');
+const logger = require("./src/util/utils").logger;
 
 app.use(express.json());
 
@@ -55,6 +56,5 @@ app.use('*', (req, res) => {
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
 });
-module.exports = app;
 
-//test
+module.exports = app;

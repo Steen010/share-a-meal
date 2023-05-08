@@ -1,12 +1,15 @@
 // get the client
 const database = require('mysql2');
+const logger = require("../util/utils").logger;
 
 // Create the connection pool. The pool-specific settings are the defaults
 const pool = database.createPool({
-  host: 'localhost',
-  user: 'root',
-  database: 'shareameal',
-  port: 3306,
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  database: process.env.DB_DATABASE || 'shareameal',
+  port: process.env.DB_PORT || 3306,
+  password: process.env.DB_PASSWORD || '',
+  multipleStatements: true,
   waitForConnections: true,
   connectionLimit: 10,
   maxIdle: 10, // max idle connections, the default value is the same as `connectionLimit`
@@ -14,4 +17,16 @@ const pool = database.createPool({
   queueLimit: 0
 });
 
-module.exports = database;
+pool.on('connection', function (connection) {
+  logger.debug(`Connected to database '${connection.config.database}'`);
+});
+
+pool.on('acquire', function (connection) {
+  logger.debug('Connection %d acquired', connection.threadId);
+});
+
+pool.on('release', function (connection) {
+  logger.debug('Connection %d released', connection.threadId);
+});
+
+module.exports = pool;
