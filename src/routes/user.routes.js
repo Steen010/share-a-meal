@@ -15,7 +15,6 @@ router.get('', userController.getAllUsers);
 router.get(
   '/profile',
   authController.validateToken,
-  authController.validateLogin,
   userController.getUserProfile
 );
 

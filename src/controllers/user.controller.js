@@ -48,7 +48,6 @@ const userController = {
   },
 
   getUserProfile: (req, res, next) => {
-    req.userId = 1;
     logger.trace('Get user profile for user', req.userId);
 
     let sqlStatement = 'SELECT * FROM `user` WHERE id=?';

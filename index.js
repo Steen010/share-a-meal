@@ -1,6 +1,8 @@
 const express = require('express');
 const logger = require('./src/util/utils').logger;
 const userRoutes = require('./src/routes/user.routes');
+const mealRoutes = require('./src/routes/meal.routes');
+const authRoutes = require('./src/routes/auth.routes');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -31,7 +33,9 @@ app.get('/api/info', (req, res) => {
 });
 
 // Hier staan de referenties naar de routes
+app.use('/api', authRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/meal', mealRoutes);
 
 // Wanneer geen enkele endpoint matcht kom je hier terecht. Dit is dus
 // een soort 'afvoerputje' (sink) voor niet-bestaande URLs in de server.
