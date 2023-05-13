@@ -47,7 +47,6 @@ const mealController = {
     });
   },
   createMeal: (req, res, next) => {
-    console.log('hier');
     logger.trace('Create new meal');
 
     // De mealgegevens zijn meegestuurd in de request body.
@@ -58,14 +57,16 @@ const mealController = {
     // Hier zie je hoe je binnenkomende meal info kunt valideren.
     try {
       logger.info('check strings')
-      
+      // assert(meal === {}, 'mealinfo is missing');
+      assert(typeof meal.name === 'string', 'firstName must be a string');
+      assert(typeof meal.description === 'string', 'emailAddress must be a string');
     } catch (err) {
       logger.warn(err.message.toString());
       // Als één van de asserts failt sturen we een error response.
       next({
         code: 400,
         message: err.message.toString(),
-        data: undefined
+        data: {}
       });
 
       // Nodejs is asynchroon. We willen niet dat de applicatie verder gaat
@@ -73,10 +74,8 @@ const mealController = {
       return;
     }
 
-    /**
-     * De rest van deze functie maak je zelf af!
-     * Voor tips, zie de PDF van de les over authenticatie.
-     */
+    logger.trace('asserts completed')
+
     let sqlStatement = 
     'INSERT INTO `meal` (`name`, `description`, `imageUrl`, `dateTime`, `maxAmountOfParticipants`, `price`) VALUES' +
     "(?, ?, ?, ?, ?, ?);" + 
