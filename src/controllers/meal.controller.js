@@ -58,8 +58,8 @@ const mealController = {
     try {
       logger.info('check strings')
       // assert(meal === {}, 'mealinfo is missing');
-      assert(typeof meal.name === 'string', 'firstName must be a string');
-      assert(typeof meal.description === 'string', 'emailAddress must be a string');
+      // assert(typeof meal.name === 'string', 'firstName must be a string');
+      // assert(typeof meal.description === 'string', 'emailAddress must be a string');
     } catch (err) {
       logger.warn(err.message.toString());
       // Als één van de asserts failt sturen we een error response.
