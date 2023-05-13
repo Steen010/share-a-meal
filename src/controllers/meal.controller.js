@@ -1,4 +1,3 @@
-const database = require('../util/database');
 const logger = require('../util/utils').logger;
 const assert = require('assert');
 const pool = require('../util/database');
@@ -56,13 +55,14 @@ const mealController = {
 
     // Hier zie je hoe je binnenkomende meal info kunt valideren.
     try {
-      logger.info('check strings')
+      logger.info('assert req body')
       // assert(meal === {}, 'mealinfo is missing');
       // assert(typeof meal.name === 'string', 'firstName must be a string');
       // assert(typeof meal.description === 'string', 'emailAddress must be a string');
     } catch (err) {
       logger.warn(err.message.toString());
       // Als één van de asserts failt sturen we een error response.
+      logger.trace('assert failure')
       next({
         code: 400,
         message: err.message.toString(),
@@ -90,6 +90,7 @@ const mealController = {
           });
         }
         if (conn) {
+          logger.trace('conn succesfull')
           conn.query(
             sqlStatement,
             [
