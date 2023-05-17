@@ -96,7 +96,6 @@ const userController = {
       assert(typeof user.firstName === 'string', 'firstName must be a string');
       assert(typeof user.emailAdress === 'string','emailAddress must be a string');
       //^(?i)[a-z]{1,1}\.[a-z]{2,}\@[a-z]{2,}\.[a-z]{2,3}$ for email
-      //
     } catch (err) {
       logger.warn(err.message.toString());
       // Als één van de asserts failt sturen we een error response.

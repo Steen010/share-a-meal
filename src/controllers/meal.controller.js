@@ -56,9 +56,8 @@ const mealController = {
     // Hier zie je hoe je binnenkomende meal info kunt valideren.
     try {
       logger.info('assert req body')
-      // assert(meal === {}, 'mealinfo is missing');
-      // assert(typeof meal.name === 'string', 'firstName must be a string');
-      // assert(typeof meal.description === 'string', 'emailAddress must be a string');
+      assert(typeof meal.name === 'string', 'mealName must be a string');
+      assert(typeof meal.description === 'string', 'description must be a string');
     } catch (err) {
       logger.warn(err.message.toString());
       // Als één van de asserts failt sturen we een error response.
@@ -77,8 +76,8 @@ const mealController = {
     logger.trace('asserts completed')
 
     let sqlStatement = 
-    'INSERT INTO `meal` (`name`, `description`, `imageUrl`, `dateTime`, `maxAmountOfParticipants`, `price`) VALUES' +
-    "(?, ?, ?, ?, ?, ?);" + 
+    'INSERT INTO `meal` (`name`, `description`, `imageUrl`, `dateTime`, `maxAmountOfParticipants`, `price`, `cookId`) VALUES' +
+    "(?, ?, ?, ?, ?, ?, ?);" + 
       'SELECT * FROM `user` WHERE id=?;';
 
       pool.getConnection(function (err, conn) {
@@ -100,7 +99,8 @@ const mealController = {
               meal.dateTime,
               meal.maxAmountOfParticipants,
               meal.price,
-              userId
+              userId,
+              meal.cookId
             ], (err, results, fields) => {
               if (err) {
                 logger.err(err.message);
@@ -138,7 +138,7 @@ const mealController = {
 
     pool.getConnection(function (err, conn) {
       if (err) {
-        logger.error(err.code, err.syscall, err.address, err.port);
+        logger.err(err.code, err.syscall, err.address, err.port);
           next({
             code: 500,
             message: err.code
