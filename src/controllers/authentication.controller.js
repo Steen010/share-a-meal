@@ -56,8 +56,8 @@ module.exports = {
 
             } else {
               next({
-                code: 401,
-                message: 'Not authorized',
+                code: 404,
+                message: 'User does not exist',
                 data: undefined
               })
             }
@@ -85,7 +85,8 @@ module.exports = {
       );
       next();
     } catch (ex) {
-      res.status(422).json({
+      res.status(400).json({
+        code: 400,
         error: ex.toString(),
         datetime: new Date().toISOString()
       });

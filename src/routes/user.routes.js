@@ -18,4 +18,10 @@ router.get(
   userController.getUserProfile
 );
 
+//UC-204 Opvragen van usergegevens bij ID
+router.get('/:userId', authController.validateToken, userController.getUserId);
+
+//UC-206 Verwijderen van user
+router.delete('/:userId', authController.validateToken, userController.deleteUser);
+
 module.exports = router;
