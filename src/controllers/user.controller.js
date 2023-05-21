@@ -248,47 +248,54 @@ const userController = {
   deleteUser: (req, res, next) => {
     const reqUserId = req.params.userId;
     const userId = req.userId;
-
+  
     logger.trace('Deleting user id = ', reqUserId, ' by user id = ', userId);
-
+  
+    if (userId != reqUserId) {
+      logger.trace(reqUserId, userId);
+      return res.status(403).json({
+        code: 403,
+        message: 'Not authorized'
+      });
+    }
+  
     let sqlStatement = 'DELETE FROM `user` WHERE id=?';
-
+  
     pool.getConnection(function (err, conn) {
       if (err) {
-        logger.err(err.code, err.syscall, err.address, err.port);
-          next({
-            code: 500,
-            message: err.code
-          });
+        logger.error(err.code, err.syscall, err.address, err.port);
+        next({
+          code: 500,
+          message: err.code
+        });
       }
       if (conn) {
-        conn.query(
-          sqlStatement, [reqUserId], (err, results, fields) => {
-            if (err) {
-              logger.err(err.message);
-                next({
-                  code: 409,
-                  message: err.message
-                });
-            }
-            if (results && results.affectedRows === 1) {
-              logger.trace('Resuts ', results);
-              res.status(200).json({
-                code: 200,
-                message: 'Meal with id ' + mealId + ' deleted',
-                data: {}
-              })
-            } else {
-              next({
-                code: 401,
-                message: 'Not authorized',
-                data: {}
-              })
-            }
+        conn.query(sqlStatement, [reqUserId], (err, results, fields) => {
+          if (err) {
+            logger.error(err.message);
+            next({
+              code: 409,
+              message: err.message
+            });
           }
-        )
+          if (results && results.affectedRows === 1) {
+            logger.trace('Results ', results);
+            res.status(200).json({
+              code: 200,
+              message: 'User with ID ' + reqUserId + ' is deleted',
+              data: {}
+            });
+          } else {
+            logger.trace('Results', results);
+            next({
+              code: 404,
+              message: 'User with ID ' + reqUserId + ' does not exist',
+              data: {}
+            });
+          }
+        });
       }
-    })
+    });
   }
 };
 
