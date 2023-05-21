@@ -45,6 +45,49 @@ const mealController = {
       }
     });
   },
+  getMealId: (req, res, next) => {
+    const mealId = req.params.mealId;
+    const userId = req.userId;
+  
+    logger.trace('Requested meal id = ', mealId, ' by user id = ', userId);
+  
+    let sqlStatement = 'SELECT * FROM `meal` WHERE id=?';
+  
+    pool.getConnection(function (err, conn) {
+      if (err) {
+        logger.error(err.code, err.syscall, err.address, err.port);
+        next({
+          code: 500,
+          message: err.code
+        });
+      }
+      if (conn) {
+        conn.query(sqlStatement, [mealId], (err, results, fields) => {
+          if (err) {
+            logger.error(err.message);
+            next({
+              code: 409,
+              message: err.message
+            });
+          }
+          if (results && results.length > 0) {
+            logger.trace('Results:', results);
+              res.status(200).json({
+                code: 200,
+                message: 'User with id ' + mealId + ' found',
+                data: results
+              });
+          } else {
+            next({
+              code: 404,
+              message: 'Meal does not exist',
+              data: {}
+            });
+          }
+        });
+      }
+    });
+  },
   createMeal: (req, res, next) => {
     logger.trace('Create new meal');
 
