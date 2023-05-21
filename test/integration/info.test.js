@@ -21,8 +21,8 @@ describe('UC-102 Informatie opvragen', function () {
         res.body.should.has.property('data');
         let { data, message } = res.body;
         data.should.be.an('object');
-        data.should.has.property('studentName').to.be.equal('Davide');
-        data.should.has.property('studentNumber').to.be.equal(1234567);
+        data.should.has.property('studentName').to.be.equal('Koen van Steen');
+        data.should.has.property('studentNumber').to.be.equal(2196527);
         done();
       });
   });
