@@ -215,6 +215,14 @@ const mealController = {
         )
       }
     })
+  },
+  participateMeal: (req, res, next) => {
+  },
+  deleteMealParticipate: (req, res, next) => {
+  },
+  getAllParticipations: (req, res, next) => {
+  },
+  getParticipationDetails: (req, res, next) => {
   }
 };
 
