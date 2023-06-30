@@ -157,7 +157,7 @@ const mealController = {
                 const newMeal = {
                   id: results[0].insertId,
                   ...meal,
-                  cook: results[1]
+                  cook: results[1].cookId
                 }
                 res.status(200).json({
                   code: 200,
@@ -215,14 +215,6 @@ const mealController = {
         )
       }
     })
-  },
-  participateMeal: (req, res, next) => {
-  },
-  deleteMealParticipate: (req, res, next) => {
-  },
-  getAllParticipations: (req, res, next) => {
-  },
-  getParticipationDetails: (req, res, next) => {
   }
 };
 
