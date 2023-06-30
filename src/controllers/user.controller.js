@@ -245,6 +245,139 @@ const userController = {
       }
     });
   },
+  updateUser: (req, res, next) => {
+    const id = req.params.userId;
+    const userId = req.userId;
+    const userToUpdate = req.body;
+    logger.debug('userPasswordToUpdate: ', userToUpdate.password);
+    try {
+      logger.info('assert req body')
+      assert(typeof req.body.firstName === 'string', 'firstName must be a string');
+      assert(typeof req.body.lastName === 'string', 'lastName must be a string');
+      assert(typeof req.body.street === 'string', 'street must be a string');
+      assert(typeof req.body.city === 'string', 'city must be a string');
+      assert(typeof req.body.emailAdress === 'string', 'emailAdress must be a string');
+      assert(typeof req.body.password === 'string', 'password must be a string');
+      assert(typeof req.body.isActive === 'number', 'isActive must be a number');
+      assert(typeof req.body.id === 'number', 'id must be a number');
+      assert(
+        /^[a-z]{1}\.[a-z]{2,}@[a-z]{2,}\.[a-z]{2,3}$/i.test(req.body.emailAdress),
+        'emailAdress must be in the following format: x.xx@xx.xx, with one letter before the dot, a second part with a minimum of two letters, and a domain with a minimum of two letters and a domain extension of two or three letters.'
+      );
+      assert(
+        /^(?=.*[A-Z])(?=.*\d).{8,}$/.test(req.body.password),
+        'password must contain at least one uppercase letter, one digit, and be at least 8 characters long.'
+      );
+      assert(
+        /^06[-\s]?\d{8}$/.test(req.body.phoneNumber),
+        'phoneNumber must start with 06 have no space a "-" or a white space and be followed by 8 numbers'
+      );
+    } catch (err) {
+      logger.warn(err.message.toString());
+      // Als één van de asserts failt sturen we een error response.
+      logger.trace('assert failure')
+      next({
+        code: 400,
+        message: err.message.toString(),
+        data: {}
+      });
+
+      // Nodejs is asynchroon. We willen niet dat de applicatie verder gaat
+      // wanneer er al een response is teruggestuurd.
+      return;
+    }
+
+    logger.trace('asserts completed')
+
+
+    pool.getConnection(function (err, conn) {
+      if (err) {
+        logger.error('Database connection error:', err);
+        return res.status(500).json({
+          status: 500,
+          message: err.message,
+          data: {},
+        });
+      }
+
+      const firstQuery = 'SELECT * FROM `user` WHERE id = ?'
+
+      // Use the connection
+      conn.query(firstQuery, [id], (err, results, fields) => {
+          if (err) {
+            logger.error('Database query error:', err);
+            return res.status(500).json({
+              status: 500,
+              message: err.message,
+              data: {},
+            });
+          }
+          // Check if user exists
+          if (results.length === 0) {
+            return res.status(404).json({
+              status: 404,
+              message: 'User not found',
+              data: {},
+            });
+          }
+
+          // Check if user is updating their own profile
+          if (id != userId) {
+            return res.status(403).json({
+              status: 403,
+              message: 'You can only update your own profile',
+              data: {},
+            });
+          }
+
+          const sql = `
+        UPDATE user 
+        SET firstName = ?, lastName = ?, isActive = ?, emailAdress = ?, password = ?, phoneNumber = ?, street = ?, city = ?
+        WHERE id = ?
+        `;
+          const values = [
+            userToUpdate.firstName,
+            userToUpdate.lastName,
+            userToUpdate.isActive,
+            userToUpdate.emailAdress,
+            userToUpdate.password,
+            userToUpdate.phoneNumber,
+            userToUpdate.street,
+            userToUpdate.city,
+            id,
+          ];
+
+          conn.query(sql, values, function (err, results, fields) {
+            if (err) {
+              logger.error('Database query error:', err);
+              return res.status(500).json({
+                status: 500,
+                message: err.message,
+                data: {},
+              });
+            }
+
+            // Get the updated user details
+            conn.query(
+              'SELECT * FROM user WHERE id = ?',
+              [id],
+              function (err, results, fields) {
+                if (err) throw err;
+
+                // User was updated successfully
+                res.status(200).json({
+                  status: 200,
+                  message: `User successfully updated`,
+                  data: results[0],
+                });
+                conn.release();
+              }
+            );
+          });
+        }
+      );
+    });
+  },
   deleteUser: (req, res, next) => {
     const reqUserId = req.params.userId;
     const userId = req.userId;

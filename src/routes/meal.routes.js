@@ -6,6 +6,9 @@ const authController = require('../controllers/authentication.controller');
 // UC-301 Toevoegen van maaltijden
 router.post('', authController.validateToken, mealController.createMeal);
 
+// UC-302 Wijzigen van een maaltijd
+router.put('/:mealId', authController.validateToken, mealController.updateMeal);
+
 // UC-303 Opvragen van alle maaltijden
 router.get('', mealController.getAllMeals);
 

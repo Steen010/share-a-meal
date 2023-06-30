@@ -157,7 +157,7 @@ const mealController = {
                 const newMeal = {
                   id: results[0].insertId,
                   ...meal,
-                  cook: results[1].cookId
+                  cookId: userId
                 }
                 res.status(200).json({
                   code: 200,
@@ -169,6 +169,158 @@ const mealController = {
           )
         }
       })
+  },
+  updateMeal: (req, res, next) => {
+    const mealId = req.params.mealId;
+    const userId = req.userId;
+    logger.info('USER ID:', userId);
+    logger.info('MEAL ID:', mealId);
+
+    try {
+      logger.info('assert req body')
+      assert(typeof req.body.name === 'string', 'mealName must be a string');
+      assert(typeof req.body.description === 'string', 'description must be a string');
+    } catch (err) {
+      logger.warn(err.message.toString());
+      // Als één van de asserts failt sturen we een error response.
+      logger.trace('assert failure')
+      next({
+        code: 400,
+        message: err.message.toString(),
+        data: {}
+      });
+
+      // Nodejs is asynchroon. We willen niet dat de applicatie verder gaat
+      // wanneer er al een response is teruggestuurd.
+      return;
+    }
+
+    pool.getConnection(function (err, conn) {
+      if (err) {
+        logger.error('Database connection error:', err);
+        return res.status(500).json({
+          status: 500,
+          message: err.message,
+          data: {},
+        });
+      }
+      logger.debug('Database connection established');
+
+      conn.query(
+        'SELECT * FROM meal WHERE id = ?',
+        [mealId],
+        function (error, results, fields) {
+          if (error) {
+            logger.error('Database query error:', error);
+            conn.release();
+            return res.status(500).json({
+              status: 500,
+              message: error.message,
+              data: {},
+            });
+          }
+          logger.debug('Retrieved meal information');
+
+          // Check if meal exists
+          if (results.length === 0) {
+            logger.info('Meal not found');
+            conn.release();
+            return res.status(404).json({
+              status: 404,
+              message: 'Meal not found',
+              data: {},
+            });
+          }
+
+          // Check if user is updating their own meal
+          if (results[0].cookId != userId) {
+            logger.info('User is not the creator of the meal');
+            conn.release();
+            return res.status(403).json({
+              status: 403,
+              message: 'You can only update your own meals',
+              data: {},
+            });
+          }
+
+          // Combine current meal values with new ones from request body
+          let updatedMeal = {
+            ...results[0],
+            ...req.body,
+          };
+
+        
+          // If updatedMeal.allergenes is an array, join it into a string
+          if (Array.isArray(updatedMeal.allergenes)) {
+            updatedMeal.allergenes = updatedMeal.allergenes.join(',');
+          }
+          const sql = `
+            UPDATE meal
+            SET name = ?, description = ?, isActive = ?, isVega = ?, isVegan = ?, isToTakeHome = ?, dateTime = ?, maxAmountOfParticipants = ?, price = ?, imageUrl = ?, allergenes = ?
+            WHERE id = ?
+          `;
+          const values = [
+            updatedMeal.name,
+            updatedMeal.description,
+            updatedMeal.isActive,
+            updatedMeal.isVega,
+            updatedMeal.isVegan,
+            updatedMeal.isToTakeHome,
+            updatedMeal.dateTime,
+            updatedMeal.maxAmountOfParticipants,
+            updatedMeal.price,
+            updatedMeal.imageUrl,
+            updatedMeal.allergenes,
+            mealId,
+          ];
+
+          
+
+          conn.query(sql, values, function (error, results, fields) {
+            if (error) {
+              logger.error('Database query error:', error);
+              conn.release();
+              return res.status(500).json({
+                status: 500,
+                message: error.message,
+                data: {},
+              });
+            }
+
+            logger.info('Meal updated in the database');
+            logger.info(updatedMeal.allergenes);
+
+            // Nieuwe informatie ophalen
+            conn.query(
+              'SELECT * FROM meal WHERE id = ?',
+              [mealId],
+              function (error, results, fields) {
+                if (error) {
+                  logger.error('Database query error:', error);
+                  conn.release();
+                  return res.status(500).json({
+                    status: 500,
+                    message: error.message,
+                    data: {},
+                  });
+                }
+
+                logger.info('Retrieved updated meal information');
+
+                res.status(200).json({
+                  status: 200,
+                  message: `Meal successfully updated`,
+                  data: results[0],
+                });
+
+                conn.release();
+                logger.info('Database connection released');
+              }
+            );
+          });
+        }
+      );
+    });
   },
   deleteMeal: (req, res, next) => {
     const mealId = req.params.mealId;
