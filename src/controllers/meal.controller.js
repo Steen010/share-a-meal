@@ -74,7 +74,7 @@ const mealController = {
             logger.trace('Results:', results);
               res.status(200).json({
                 code: 200,
-                message: 'User with id ' + mealId + ' found',
+                message: 'Meal with id ' + mealId + ' found',
                 data: results
               });
           } else {
@@ -101,6 +101,15 @@ const mealController = {
       logger.info('assert req body')
       assert(typeof meal.name === 'string', 'mealName must be a string');
       assert(typeof meal.description === 'string', 'description must be a string');
+      assert(typeof meal.isActive === 'number', 'isActive must be a number');
+      assert(typeof meal.isVega === 'number', 'isVega must be a number');
+      assert(typeof meal.isVegan === 'number', 'isVegan must be a number');
+      assert(typeof meal.isToTakeHome === 'number', 'isToTakeHome must be a number');
+      assert(typeof meal.dateTime === 'string', 'dateTime must be a string');
+      assert(typeof meal.maxAmountOfParticipants === 'number', 'maxAmountOfParticipants must be a number');
+      assert(typeof meal.price === 'string', 'price must be a string');
+      assert(typeof meal.imageUrl === 'string', 'imageUrl must be a string');
+      assert(typeof meal.cookId === 'number', 'cookId must be a number');
     } catch (err) {
       logger.warn(err.message.toString());
       // Als één van de asserts failt sturen we een error response.
@@ -180,6 +189,15 @@ const mealController = {
       logger.info('assert req body')
       assert(typeof req.body.name === 'string', 'mealName must be a string');
       assert(typeof req.body.description === 'string', 'description must be a string');
+      assert(typeof req.body.isActive === 'number', 'isActive must be a number');
+      assert(typeof req.body.isVega === 'number', 'isVega must be a number');
+      assert(typeof req.body.isVegan === 'number', 'isVegan must be a number');
+      assert(typeof req.body.isToTakeHome === 'number', 'isToTakeHome must be a number');
+      assert(typeof req.body.dateTime === 'string', 'dateTime must be a string');
+      assert(typeof req.body.maxAmountOfParticipants === 'number', 'maxAmountOfParticipants must be a number');
+      assert(typeof req.body.price === 'string', 'price must be a string');
+      assert(typeof req.body.imageUrl === 'string', 'imageUrl must be a string');
+      assert(typeof req.body.cookId === 'number', 'cookId must be a number');
     } catch (err) {
       logger.warn(err.message.toString());
       // Als één van de asserts failt sturen we een error response.
@@ -248,7 +266,7 @@ const mealController = {
             ...results[0],
             ...req.body,
           };
-
+          logger.info(typeof(updatedMeal.allergenes));
         
           // If updatedMeal.allergenes is an array, join it into a string
           if (Array.isArray(updatedMeal.allergenes)) {
@@ -275,7 +293,6 @@ const mealController = {
           ];
 
           
-
           conn.query(sql, values, function (error, results, fields) {
             if (error) {
               logger.error('Database query error:', error);
@@ -288,7 +305,6 @@ const mealController = {
             }
 
             logger.info('Meal updated in the database');
-            logger.info(updatedMeal.allergenes);
 
             // Nieuwe informatie ophalen
             conn.query(
