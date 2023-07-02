@@ -39,7 +39,7 @@ describe('UC-102 Informatie opvragen', function () {
 
         status.should.equal(404);
         message.should.be.a('string').that.is.equal('Endpoint not found');
-        data.should.be.an('object');
+        data.should.be.a('object');
 
         done();
       });

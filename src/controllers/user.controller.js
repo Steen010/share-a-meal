@@ -3,15 +3,65 @@ const assert = require('assert');
 const pool = require('../util/database');
 const jwt = require('jsonwebtoken');
 
+
+const VALID_FIELDS = [
+  'id',
+  'firstName',
+  'lastName',
+  'emailAdress',
+  'phoneNumber',
+  'city',
+  'street',
+  'isActive',
+  'roles',
+];
+function buildSqlStatement(queryField) {
+  let sqlStatement =
+    'SELECT id, firstName, lastName, emailAdress, password, phoneNumber, city, street, isActive, roles FROM `user`';
+  let params = [];
+  let conditions = [];
+  let invalidFieldName = null;
+
+  for (let field in queryField) {
+    let value = queryField[field];
+
+    if (!VALID_FIELDS.includes(field)) {
+      invalidFieldName = field;
+      break;
+    }
+
+    if (!value) continue;
+
+    if (value.toLowerCase() === 'true') {
+      value = 1;
+    } else if (value.toLowerCase() === 'false') {
+      value = 0;
+    }
+
+    conditions.push(`\`${field}\` = ?`);
+    params.push(value);
+  }
+
+  if (invalidFieldName) {
+    return { error: `Invalid field in filter: ${invalidFieldName}.` };
+  }
+
+  if (conditions.length > 0) {
+    sqlStatement += ' WHERE ' + conditions.slice(0, 2).join(' AND ');
+  }
+
+  return { sqlStatement, params };
+}
+
 const userController = {
   getAllUsers: (req, res, next) => {
     logger.info('Get all users');
-
-    let sqlStatement = 'SELECT * FROM `user`';
-    // Hier wil je misschien iets doen met mogelijke filterwaarden waarop je zoekt.
-    if (req.query.isactive) {
-      // voeg de benodigde SQL code toe aan het sql statement
-      // bv sqlStatement += " WHERE `isActive=?`"
+    
+    // Make query with filter if necessary
+    const { error, sqlStatement, params } = buildSqlStatement(req.query);
+    if (error) {
+      res.status(400).json({ status: 400, message: error, data: {} });
+      return;
     }
 
     pool.getConnection(function (err, conn) {
@@ -24,7 +74,7 @@ const userController = {
         });
       }
       if (conn) {
-        conn.query(sqlStatement, function (err, results, fields) {
+        conn.query(sqlStatement, params, function (err, results, fields) {
           if (err) {
             logger.err(err.message);
             next({
