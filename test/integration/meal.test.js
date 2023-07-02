@@ -446,14 +446,14 @@ describe('Meal API', () => {
     it('TC-305-5 | Meal successfully deleted', (done) => {
       chai
         .request(server)
-        .delete('/api/meal/1')
+        .delete('/api/meal/2')
         .set('Authorization', `Bearer ${token}`)
         .end((err, res) => {
           let { status, message, data } = res.body;
           status.should.eql(200);
           res.body.should.be.an('object');
-          message.should.be.a('string').eql('Maaltijd met ID 1 is verwijderd');
-          res.body.should.have.property('data').to.be.empty;
+          message.should.be.a('string').eql('Meal with id 2 deleted');
+          res.body.should.has.property('data').to.be.empty;
           done();
         });
     });
