@@ -101,21 +101,16 @@ const mealController = {
       logger.info('assert req body')
       assert(typeof meal.name === 'string', 'mealName must be a string');
       assert(typeof meal.description === 'string', 'description must be a string');
-      assert(typeof meal.isActive === 'number', 'isActive must be a number');
-      assert(typeof meal.isVega === 'number', 'isVega must be a number');
-      assert(typeof meal.isVegan === 'number', 'isVegan must be a number');
-      assert(typeof meal.isToTakeHome === 'number', 'isToTakeHome must be a number');
       assert(typeof meal.dateTime === 'string', 'dateTime must be a string');
       assert(typeof meal.maxAmountOfParticipants === 'number', 'maxAmountOfParticipants must be a number');
-      assert(typeof meal.price === 'string', 'price must be a string');
+      assert(typeof meal.price === 'number', 'price must be a number');
       assert(typeof meal.imageUrl === 'string', 'imageUrl must be a string');
-      assert(typeof meal.cookId === 'number', 'cookId must be a number');
     } catch (err) {
       logger.warn(err.message.toString());
       // Als één van de asserts failt sturen we een error response.
       logger.trace('assert failure')
       next({
-        code: 400,
+        status: 400,
         message: err.message.toString(),
         data: {}
       });
@@ -136,8 +131,9 @@ const mealController = {
         if (err) {
           logger.error(err.code, err.syscall, err.address, err.port);
           next({
-            code: 500,
-            message: err.code
+            status: 500,
+            message: err.code,
+            data: {}
           });
         }
         if (conn) {
@@ -157,8 +153,9 @@ const mealController = {
               if (err) {
                 logger.err(err.message);
                 next({
-                  code: 409,
-                  message: err.message
+                  status: 409,
+                  message: err.message,
+                  data: {}
                 });
               }
               if (results) {
@@ -169,7 +166,7 @@ const mealController = {
                   cookId: userId
                 }
                 res.status(200).json({
-                  code: 200,
+                  status: 200,
                   message: 'New meal created',
                   data: newMeal
                 })
