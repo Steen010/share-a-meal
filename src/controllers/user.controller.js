@@ -86,7 +86,7 @@ const userController = {
             logger.info('Found', results.length, 'results');
             res.status(200).json({
               status: 200,
-              message: 'User getAll endpoint',
+              message: 'Get all users',
               data: results
             });
           }
@@ -122,7 +122,7 @@ const userController = {
             logger.trace('Found', results.length, 'results');
             res.status(200).json({
               status: 200,
-              message: 'Get User profile',
+              message: 'User profile retrieved successfully',
               data: results[0]
             });
           }
@@ -147,14 +147,15 @@ const userController = {
       assert(typeof user.street === 'string', 'street must be a string');
       assert(typeof user.city === 'string', 'city must be a string');
       assert(typeof user.emailAdress === 'string', 'emailAdress must be a string');
+      // assert(user.password === '', 'password is missing.');
       assert(typeof user.password === 'string', 'password must be a string');
       assert(
         /^[a-z]{1}\.[a-z]{2,}@[a-z]{2,}\.[a-z]{2,3}$/i.test(req.body.emailAdress),
-        'emailAdress must be in the following format: x.xx@xx.xx, with one letter before the dot, a second part with a minimum of two letters, and a domain with a minimum of two letters and a domain extension of two or three letters.'
+        'Invalid email address.'
       );
       assert(
         /^(?=.*[A-Z])(?=.*\d).{8,}$/.test(req.body.password),
-        'password must contain at least one uppercase letter, one digit, and be at least 8 characters long.'
+        'Invalid password.'
       );
       assert(
         /^06[-\s]?\d{8}$/.test(req.body.phoneNumber),
@@ -274,20 +275,20 @@ const userController = {
               user.password = results[0].password;
               res.status(200).json({
                 status: 200,
-                message: 'User with id ' + reqUserId + ' found and authorized',
+                message: 'User found',
                 data: user
               });
             } else {
               res.status(200).json({
                 status: 200,
-                message: 'User with id ' + reqUserId + ' found unauthorized',
+                message: 'User found',
                 data: user
               });
             }
           } else {
             next({
               status: 404,
-              message: 'User does not exist',
+              message: 'User not found',
               data: {}
             });
           }
@@ -306,11 +307,11 @@ const userController = {
       assert(typeof req.body.lastName === 'string', 'lastName must be a string');
       assert(typeof req.body.street === 'string', 'street must be a string');
       assert(typeof req.body.city === 'string', 'city must be a string');
-      assert(typeof req.body.emailAdress === 'string', 'emailAdress must be a string');
+      assert(typeof req.body.emailAdress === 'string', 'Invalid email address.');
       assert(typeof req.body.password === 'string', 'password must be a string');
       assert(
         /^[a-z]{1}\.[a-z]{2,}@[a-z]{2,}\.[a-z]{2,3}$/i.test(req.body.emailAdress),
-        'emailAdress must be in the following format: x.xx@xx.xx, with one letter before the dot, a second part with a minimum of two letters, and a domain with a minimum of two letters and a domain extension of two or three letters.'
+        'Invalid email address'
       );
       assert(
         /^(?=.*[A-Z])(?=.*\d).{8,}$/.test(req.body.password),
@@ -318,7 +319,7 @@ const userController = {
       );
       assert(
         /^06[-\s]?\d{8}$/.test(req.body.phoneNumber),
-        'phoneNumber must start with 06 have no space a "-" or a white space and be followed by 8 numbers'
+        'Invalid phone number.'
       );
     } catch (err) {
       logger.warn(err.message.toString());
@@ -432,16 +433,8 @@ const userController = {
   
     logger.trace('Deleting user id = ', reqUserId, ' by user id = ', userId);
   
-    if (userId != reqUserId) {
-      logger.trace(reqUserId, userId);
-      return res.status(403).json({
-        status: 403,
-        message: 'Not authorized'
-      });
-    }
-  
-    let sqlStatement = 'DELETE FROM `user` WHERE id=?';
-  
+    let preSqlStatement = 'SELECT * FROM `user` WHERE id=?';
+
     pool.getConnection(function (err, conn) {
       if (err) {
         logger.error(err.status, err.syscall, err.address, err.port);
@@ -450,6 +443,39 @@ const userController = {
           message: err.status
         });
       }
+      if (conn) {
+        conn.query(preSqlStatement, [reqUserId], (err, results, fields) => {
+          if (err) {
+            logger.error(err.message);
+            next({
+              status: 409,
+              message: err.message
+            });
+          }
+          if (results.length === 0) {
+            logger.trace('Results ', results);
+            return res.status(404).json({
+              status: 404,
+              message: 'User with ID ' + reqUserId + ' does not exist',
+              data: {}
+            });
+          } 
+          if (userId != reqUserId) {
+            logger.trace(reqUserId, userId);
+            return res.status(403).json({
+              status: 403,
+              message: 'Logged in user is not allowed to delete this user.',
+              data: {}
+            });
+          }
+        });
+      }
+
+    
+  
+    let sqlStatement = 'DELETE FROM `user` WHERE id=?';
+  
+    
       if (conn) {
         conn.query(sqlStatement, [reqUserId], (err, results, fields) => {
           if (err) {
@@ -463,17 +489,10 @@ const userController = {
             logger.trace('Results ', results);
             res.status(200).json({
               status: 200,
-              message: 'User with ID ' + reqUserId + ' is deleted',
+              message: 'Gebruiker met ID ' + reqUserId + ' is verwijderd',
               data: {}
             });
-          } else {
-            logger.trace('Results', results);
-            next({
-              status: 404,
-              message: 'User with ID ' + reqUserId + ' does not exist',
-              data: {}
-            });
-          }
+          } 
         });
       }
     });

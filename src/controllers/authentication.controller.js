@@ -25,7 +25,8 @@ module.exports = {
             logger.err(err.message);
             next({
               status: 409,
-              message: err.message
+              message: err.message,
+              data: {}
             });
           }
           if (results) {
@@ -57,8 +58,8 @@ module.exports = {
             } else {
               next({
                 status: 404,
-                message: 'User does not exist',
-                data: undefined
+                message: 'User not found',
+                data: {}
               })
             }
           }
@@ -113,7 +114,7 @@ module.exports = {
         if (err) {
           next({
             status: 401,
-            message: 'Not authorized',
+            message: 'Invalid token.',
             data: undefined
           });
         }

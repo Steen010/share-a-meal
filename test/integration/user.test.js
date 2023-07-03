@@ -142,7 +142,7 @@ const INSERT_MEALS =
           res.body.should.be.an('object');
           let { status, message, data } = res.body;
           status.should.be.equal(200);
-          message.should.be.equal('Authentication successful!');
+          message.should.be.equal('Login endpoint');
           data.should.be.an('object');
           data.should.have.property('firstName');
           data.should.have.property('lastName');
@@ -285,7 +285,7 @@ const INSERT_MEALS =
           res.body.should.be.an('object');
           let { status, message, data } = res.body;
           status.should.eql(200);
-          message.should.be.a('string').eql('Get All Users.');
+          message.should.be.a('string').eql('Get all users');
           data.should.be.an('array');
           data.length.should.be.eql(2);
           done();
@@ -301,7 +301,7 @@ const INSERT_MEALS =
           res.body.should.be.an('object');
           let { status, message, data } = res.body;
           status.should.eql(200);
-          message.should.be.a('string').eql('Get All Users.');
+          message.should.be.a('string').eql('Get all users');
           data.should.be.an('array');
           data.length.should.be.eql(0);
           done();
@@ -317,7 +317,7 @@ const INSERT_MEALS =
           res.body.should.be.an('object');
           let { status, message, data } = res.body;
           status.should.eql(200);
-          message.should.be.a('string').eql('Get All Users.');
+          message.should.be.a('string').eql('Get all users');
           data.should.be.an('array');
           data.length.should.be.eql(0);
           done();
@@ -333,7 +333,7 @@ const INSERT_MEALS =
           res.body.should.be.an('object');
           let { status, message, data } = res.body;
           status.should.eql(200);
-          message.should.be.a('string').eql('Get All Users.');
+          message.should.be.a('string').eql('Get all users');
           data.should.be.an('array');
           data.length.should.be.eql(2);
           done();
@@ -349,7 +349,7 @@ const INSERT_MEALS =
           res.body.should.be.an('object');
           let { status, message, data } = res.body;
           status.should.eql(200);
-          message.should.be.a('string').eql('Get All Users.');
+          message.should.be.a('string').eql('Get all users');
           data.should.be.an('array');
           data.length.should.be.eql(1);
           done();
@@ -624,7 +624,7 @@ const INSERT_MEALS =
           res.body.should.be.an('object');
           let { status, message, data } = res.body;
           status.should.eql(404);
-          message.should.be.a('string').eql('User not found');
+          message.should.be.a('string').eql('User with ID 0 does not exist');
           Object.keys(data).length.should.be.equal(0);
           done();
         });
