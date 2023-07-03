@@ -67,10 +67,10 @@ const userController = {
     pool.getConnection(function (err, conn) {
       // Do something with the connection
       if (err) {
-        logger.error(err.code, err.syscall, err.address, err.port);
+        logger.error(err.status, err.syscall, err.address, err.port);
         next({
-          code: 500,
-          message: err.code
+          status: 500,
+          message: err.status
         });
       }
       if (conn) {
@@ -78,14 +78,14 @@ const userController = {
           if (err) {
             logger.err(err.message);
             next({
-              code: 409,
+              status: 409,
               message: err.message
             });
           }
           if (results) {
             logger.info('Found', results.length, 'results');
             res.status(200).json({
-              code: 200,
+              status: 200,
               message: 'User getAll endpoint',
               data: results
             });
@@ -103,10 +103,10 @@ const userController = {
     pool.getConnection(function (err, conn) {
       // Do something with the connection
       if (err) {
-        logger.error(err.code, err.syscall, err.address, err.port);
+        logger.error(err.status, err.syscall, err.address, err.port);
         next({
-          code: 500,
-          message: err.code
+          status: 500,
+          message: err.status
         });
       }
       if (conn) {
@@ -114,14 +114,14 @@ const userController = {
           if (err) {
             logger.error(err.message);
             next({
-              code: 409,
+              status: 409,
               message: err.message
             });
           }
           if (results) {
             logger.trace('Found', results.length, 'results');
             res.status(200).json({
-              code: 200,
+              status: 200,
               message: 'Get User profile',
               data: results[0]
             });
@@ -165,7 +165,7 @@ const userController = {
       // Als één van de asserts failt sturen we een error response.
       logger.trace('assert failure')
       next({
-        code: 400,
+        status: 400,
         message: err.message.toString(),
         data: {}
       });
@@ -183,10 +183,10 @@ const userController = {
 
       pool.getConnection(function (err, conn) {
         if (err) {
-          logger.error(err.code, err.syscall, err.address, err.port);
+          logger.error(err.status, err.syscall, err.address, err.port);
           next({
-            code: 500,
-            message: err.code
+            status: 500,
+            message: err.status
           });
         }
         if (conn) {
@@ -205,7 +205,7 @@ const userController = {
               if (err) {
                 logger.error(err.message);
                 next({
-                  code: 409,
+                  status: 409,
                   message: err.message
                 });
               }
@@ -221,7 +221,7 @@ const userController = {
                   phoneNumber: user.phoneNumber
                 };
                 res.status(200).json({
-                  code: 200,
+                  status: 200,
                   message: 'New user created',
                   data: newUser
                 })
@@ -241,10 +241,10 @@ const userController = {
   
     pool.getConnection(function (err, conn) {
       if (err) {
-        logger.error(err.code, err.syscall, err.address, err.port);
+        logger.error(err.status, err.syscall, err.address, err.port);
         next({
-          code: 500,
-          message: err.code
+          status: 500,
+          message: err.status
         });
       }
       if (conn) {
@@ -252,7 +252,7 @@ const userController = {
           if (err) {
             logger.error(err.message);
             next({
-              code: 409,
+              status: 409,
               message: err.message
             });
           }
@@ -273,20 +273,20 @@ const userController = {
             if (userId == reqUserId) {
               user.password = results[0].password;
               res.status(200).json({
-                code: 200,
+                status: 200,
                 message: 'User with id ' + reqUserId + ' found and authorized',
                 data: user
               });
             } else {
               res.status(200).json({
-                code: 200,
+                status: 200,
                 message: 'User with id ' + reqUserId + ' found unauthorized',
                 data: user
               });
             }
           } else {
             next({
-              code: 404,
+              status: 404,
               message: 'User does not exist',
               data: {}
             });
@@ -308,8 +308,6 @@ const userController = {
       assert(typeof req.body.city === 'string', 'city must be a string');
       assert(typeof req.body.emailAdress === 'string', 'emailAdress must be a string');
       assert(typeof req.body.password === 'string', 'password must be a string');
-      assert(typeof req.body.isActive === 'number', 'isActive must be a number');
-      assert(typeof req.body.id === 'number', 'id must be a number');
       assert(
         /^[a-z]{1}\.[a-z]{2,}@[a-z]{2,}\.[a-z]{2,3}$/i.test(req.body.emailAdress),
         'emailAdress must be in the following format: x.xx@xx.xx, with one letter before the dot, a second part with a minimum of two letters, and a domain with a minimum of two letters and a domain extension of two or three letters.'
@@ -327,7 +325,7 @@ const userController = {
       // Als één van de asserts failt sturen we een error response.
       logger.trace('assert failure')
       next({
-        code: 400,
+        status: 400,
         message: err.message.toString(),
         data: {}
       });
@@ -437,7 +435,7 @@ const userController = {
     if (userId != reqUserId) {
       logger.trace(reqUserId, userId);
       return res.status(403).json({
-        code: 403,
+        status: 403,
         message: 'Not authorized'
       });
     }
@@ -446,10 +444,10 @@ const userController = {
   
     pool.getConnection(function (err, conn) {
       if (err) {
-        logger.error(err.code, err.syscall, err.address, err.port);
+        logger.error(err.status, err.syscall, err.address, err.port);
         next({
-          code: 500,
-          message: err.code
+          status: 500,
+          message: err.status
         });
       }
       if (conn) {
@@ -457,21 +455,21 @@ const userController = {
           if (err) {
             logger.error(err.message);
             next({
-              code: 409,
+              status: 409,
               message: err.message
             });
           }
           if (results && results.affectedRows === 1) {
             logger.trace('Results ', results);
             res.status(200).json({
-              code: 200,
+              status: 200,
               message: 'User with ID ' + reqUserId + ' is deleted',
               data: {}
             });
           } else {
             logger.trace('Results', results);
             next({
-              code: 404,
+              status: 404,
               message: 'User with ID ' + reqUserId + ' does not exist',
               data: {}
             });

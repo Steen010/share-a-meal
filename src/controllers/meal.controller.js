@@ -17,10 +17,10 @@ const mealController = {
     pool.getConnection(function (err, conn) {
       // Do something with the connection
       if (err) {
-        logger.error(err.code, err.syscall, err.address, err.port);
+        logger.error(err.status, err.syscall, err.address, err.port);
         next({
-          code: 500,
-          message: err.code
+          status: 500,
+          message: err.status
         });
       }
       if (conn) {
@@ -28,15 +28,15 @@ const mealController = {
           if (err) {
             logger.error(err.message);
             next({
-              code: 409,
+              status: 409,
               message: err.message
             });
           }
           if (results) {
             logger.info('Found', results.length, 'results');
             res.status(200).json({
-              code: 200,
-              message: 'meal getAll endpoint',
+              status: 200,
+              message: 'Meal getAll endpoint',
               data: results
             });
           }
@@ -55,10 +55,10 @@ const mealController = {
   
     pool.getConnection(function (err, conn) {
       if (err) {
-        logger.error(err.code, err.syscall, err.address, err.port);
+        logger.error(err.status, err.syscall, err.address, err.port);
         next({
-          code: 500,
-          message: err.code
+          status: 500,
+          message: err.status
         });
       }
       if (conn) {
@@ -66,20 +66,20 @@ const mealController = {
           if (err) {
             logger.error(err.message);
             next({
-              code: 409,
+              status: 409,
               message: err.message
             });
           }
           if (results && results.length > 0) {
             logger.trace('Results:', results);
               res.status(200).json({
-                code: 200,
+                status: 200,
                 message: 'Meal with id ' + mealId + ' found',
                 data: results
               });
           } else {
             next({
-              code: 404,
+              status: 404,
               message: 'Meal does not exist',
               data: {}
             });
@@ -99,7 +99,7 @@ const mealController = {
     // Hier zie je hoe je binnenkomende meal info kunt valideren.
     try {
       logger.info('assert req body')
-      assert(typeof meal.name === 'string', 'mealName must be a string');
+      assert(typeof meal.name === 'string', 'missing meal name');
       assert(typeof meal.description === 'string', 'description must be a string');
       assert(typeof meal.dateTime === 'string', 'dateTime must be a string');
       assert(typeof meal.maxAmountOfParticipants === 'number', 'maxAmountOfParticipants must be a number');
@@ -129,10 +129,10 @@ const mealController = {
 
       pool.getConnection(function (err, conn) {
         if (err) {
-          logger.error(err.code, err.syscall, err.address, err.port);
+          logger.error(err.status, err.syscall, err.address, err.port);
           next({
             status: 500,
-            message: err.code,
+            message: err.status,
             data: {}
           });
         }
@@ -165,9 +165,9 @@ const mealController = {
                   ...meal,
                   cookId: userId
                 }
-                res.status(200).json({
-                  status: 200,
-                  message: 'New meal created',
+                res.status(201).json({
+                  status: 201,
+                  message: 'Meal successfully added',
                   data: newMeal
                 })
               }
@@ -184,23 +184,18 @@ const mealController = {
 
     try {
       logger.info('assert req body')
-      assert(typeof req.body.name === 'string', 'mealName must be a string');
+      assert(typeof req.body.name === 'string', 'missing meal name');
       assert(typeof req.body.description === 'string', 'description must be a string');
-      assert(typeof req.body.isActive === 'number', 'isActive must be a number');
-      assert(typeof req.body.isVega === 'number', 'isVega must be a number');
-      assert(typeof req.body.isVegan === 'number', 'isVegan must be a number');
-      assert(typeof req.body.isToTakeHome === 'number', 'isToTakeHome must be a number');
       assert(typeof req.body.dateTime === 'string', 'dateTime must be a string');
       assert(typeof req.body.maxAmountOfParticipants === 'number', 'maxAmountOfParticipants must be a number');
-      assert(typeof req.body.price === 'string', 'price must be a string');
+      assert(typeof req.body.price === 'number', 'price must be a number');
       assert(typeof req.body.imageUrl === 'string', 'imageUrl must be a string');
-      assert(typeof req.body.cookId === 'number', 'cookId must be a number');
     } catch (err) {
       logger.warn(err.message.toString());
       // Als één van de asserts failt sturen we een error response.
       logger.trace('assert failure')
       next({
-        code: 400,
+        status: 400,
         message: err.message.toString(),
         data: {}
       });
@@ -346,10 +341,10 @@ const mealController = {
 
     pool.getConnection(function (err, conn) {
       if (err) {
-        logger.err(err.code, err.syscall, err.address, err.port);
+        logger.err(err.status, err.syscall, err.address, err.port);
           next({
-            code: 500,
-            message: err.code
+            status: 500,
+            message: err.status
           });
       }
       if (conn) {
@@ -358,22 +353,21 @@ const mealController = {
             if (err) {
               logger.err(err.message);
                 next({
-                  code: 409,
+                  status: 409,
                   message: err.message
                 });
             }
             if (results && results.affectedRows === 1) {
               logger.trace('Resuts ', results);
               res.status(200).json({
-                code: 200,
+                status: 200,
                 message: 'Meal with id ' + mealId + ' deleted',
                 data: {}
               })
             } else {
               next({
-                code: 401,
-                message: 'Not authorized',
-                data: {}
+                status: 401,
+                message: 'Not authorized'
               })
             }
           }

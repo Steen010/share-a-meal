@@ -11,8 +11,8 @@ module.exports = {
       if (err) {
         logger.error('Error getting connection from pool');
         next({
-          code: 500,
-          message: err.code
+          status: 500,
+          message: err.status
         });
       }
       if (connection) {
@@ -24,7 +24,7 @@ module.exports = {
           if (err) {
             logger.err(err.message);
             next({
-              code: 409,
+              status: 409,
               message: err.message
             });
           }
@@ -43,7 +43,7 @@ module.exports = {
                 (err, token) => {
                   if (token) {
                     res.status(200).json({
-                      code: 200,
+                      status: 200,
                       message: 'Login endpoint',
                       data: {
                         id,
@@ -56,7 +56,7 @@ module.exports = {
 
             } else {
               next({
-                code: 404,
+                status: 404,
                 message: 'User does not exist',
                 data: undefined
               })
@@ -86,7 +86,7 @@ module.exports = {
       next();
     } catch (ex) {
       res.status(400).json({
-        code: 400,
+        status: 400,
         error: ex.toString(),
         datetime: new Date().toISOString()
       });
@@ -101,7 +101,7 @@ module.exports = {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
       next({
-        code: 401,
+        status: 401,
         message: 'Authorization header missing!',
         data: undefined
       });
@@ -112,7 +112,7 @@ module.exports = {
       jwt.verify(token, jwtSecretKey, (err, payload) => {
         if (err) {
           next({
-            code: 401,
+            status: 401,
             message: 'Not authorized',
             data: undefined
           });
