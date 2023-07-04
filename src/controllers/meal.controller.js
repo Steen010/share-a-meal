@@ -151,9 +151,9 @@ const mealController = {
               meal.cookId
             ], (err, results, fields) => {
               if (err) {
-                logger.err(err.message);
+                logger.error(err.message);
                 next({
-                  code: 409,
+                  status: 409,
                   message: err.message
                 });
               }
@@ -164,9 +164,9 @@ const mealController = {
                   ...meal,
                   cook: results[1]
                 }
-                res.status(200).json({
-                  code: 200,
-                  message: 'New meal created',
+                res.status(201).json({
+                  status: 201,
+                  message: 'Meal successfully added',
                   data: newMeal
                 })
               }
