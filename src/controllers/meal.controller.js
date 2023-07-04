@@ -127,53 +127,56 @@ const mealController = {
       'INSERT INTO `meal` (`name`, `description`, `imageUrl`, `dateTime`, `maxAmountOfParticipants`, `price`, `cookId`) VALUES' +
       "(?, ?, ?, ?, ?, ?, ?);" + 
       'SELECT * FROM `user` WHERE id=?;';
-
-      pool.getConnection(function (err, conn) {
-        if (err) {
-          logger.error(err.code, err.syscall, err.address, err.port);
-          next({
-            code: 500,
-            message: err.code
-          });
-        }
-        if (conn) {
-          logger.trace('conn succesfull')
-          conn.query(
-            sqlStatement,
-            [
-              meal.name,
-              meal.description,
-              meal.imageUrl,
-              meal.dateTime,
-              meal.maxAmountOfParticipants,
-              meal.price,
-              userId,
-              meal.cookId
-            ], (err, results, fields) => {
-              if (err) {
-                logger.error(err.message);
-                next({
-                  status: 409,
-                  message: err.message
-                });
-              }
-              if (results) {
-                logger.trace('Meal successfully added, id = ', results.insertId);
-                const newMeal = {
-                  id: results[0].insertId,
-                  ...meal,
-                  cook: results[1]
-                }
-                res.status(201).json({
-                  status: 201,
-                  message: 'Meal successfully added',
-                  data: newMeal
-                })
-              }
+  
+    pool.getConnection(function (err, conn) {
+      if (err) {
+        logger.error(err.status, err.syscall, err.address, err.port);
+        next({
+          status: 500,
+          message: err.status,
+          data: {}
+        });
+      }
+      if (conn) {
+        logger.trace('conn succesfull')
+        conn.query(
+          sqlStatement,
+          [
+            meal.name,
+            meal.description,
+            meal.imageUrl,
+            meal.dateTime,
+            meal.maxAmountOfParticipants,
+            meal.price,
+            userId, // Use userId instead of meal.cookId
+            userId
+          ],
+          (err, results, fields) => {
+            if (err) {
+              logger.error(err.message);
+              next({
+                status: 409,
+                message: err.message,
+                data: {}
+              });
             }
-          )
-        }
-      })
+            if (results) {
+              logger.trace('Meal successfully added, id = ', results.insertId);
+              const newMeal = {
+                id: results[0].insertId,
+                ...meal,
+                cookId: userId
+              }
+              res.status(201).json({
+                status: 201,
+                message: 'Meal successfully added',
+                data: newMeal
+              })
+            }
+          }
+        )
+      }
+    })
   },
   updateMeal: (req, res, next) => {
     const mealId = req.params.mealId;
