@@ -12,9 +12,7 @@ jobs:
       MYSQL_ROOT_PASSWORD: root # default root password to use must be 'root'
       DB_HOST: "127.0.0.1"
       DB_PORT: "3306"
-
       DB_DATABASE: share_a_meal
-
       DB_USER: root
       DB_PASSWORD: root
     services:
@@ -32,9 +30,6 @@ jobs:
           mysql -uroot -p${{ env.MYSQL_ROOT_PASSWORD }} -e "SHOW DATABASES;"
           mysql -uroot -p${{ env.MYSQL_ROOT_PASSWORD }} -e "CREATE DATABASE ${{env.DB_DATABASE}};"
 
-      - name: Start MySQL service
-        run: docker run --name mysql -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=${{ env.MYSQL_ROOT_PASSWORD }} mysql:5.7
-
       - name: Import database script
         run: |
           mysql -uroot -p${{env.MYSQL_ROOT_PASSWORD}} ${{env.DB_DATABASE}} < share-a-meal.sql
@@ -46,5 +41,4 @@ jobs:
 
       - name: npm test
         run: |
-
           npm test -- --DB_PASSWORD {{env.MYSQL_ROOT_PASSWORD}} --DB_USER root --DB_NAME ${{env.DB_DATABASE}}
