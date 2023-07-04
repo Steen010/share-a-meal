@@ -12,11 +12,9 @@ jobs:
       MYSQL_ROOT_PASSWORD: root # default root password to use must be 'root'
       DB_HOST: "127.0.0.1"
       DB_PORT: "3306"
-<<<<<<< HEAD
+
       DB_DATABASE: share_a_meal
-=======
-      DB_DATABASE: shareameal-db
->>>>>>> developer
+
       DB_USER: root
       DB_PASSWORD: root
     services:
@@ -27,17 +25,15 @@ jobs:
     steps:
       - uses: actions/checkout@main
 
-<<<<<<< HEAD
       - name: Start MySQL connection from host
         run: |
           sudo /etc/init.d/mysql start
           sudo apt-get install -y mysql-client
           mysql -uroot -p${{ env.MYSQL_ROOT_PASSWORD }} -e "SHOW DATABASES;"
           mysql -uroot -p${{ env.MYSQL_ROOT_PASSWORD }} -e "CREATE DATABASE ${{env.DB_DATABASE}};"
-=======
+
       - name: Start MySQL service
         run: docker run --name mysql -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=${{ env.MYSQL_ROOT_PASSWORD }} mysql:5.7
->>>>>>> developer
 
       - name: Import database script
         run: |
@@ -50,42 +46,5 @@ jobs:
 
       - name: npm test
         run: |
-<<<<<<< HEAD
+
           npm test -- --DB_PASSWORD {{env.MYSQL_ROOT_PASSWORD}} --DB_USER root --DB_NAME ${{env.DB_DATABASE}}
-
-  #   Heroku-deploy:
-  #     needs: integrationtests
-  #     runs-on: ubuntu-latest
-  #     environment:
-  #       name: Heroku # naam van mijn environment op GitHub
-  #     steps:
-  #       - uses: actions/checkout@main
-  #       - uses: akhileshns/heroku-deploy@v3.12.12
-  #         with:
-  #           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-  #           heroku_app_name: shareameal-prog4
-  #           heroku_email: ${{secrets.HEROKU_USER_EMAIL}}
-
-  Railway-deploy:
-    needs: integrationtests
-    runs-on: ubuntu-latest
-    environment:
-      name: Railway # naam van mijn environment op GitHub
-    steps:
-      - name: Clone repository
-        uses: actions/checkout@main
-
-      - name: "Current token"
-        run: |
-          echo "secrets.RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}"
-
-      - name: Install Railway
-        run: npm i -g @railway/cli
-
-      - name: Deploy server to Railway
-        run: railway up
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-=======
-          npm run test -- --DB_PASSWORD ${{env.MYSQL_ROOT_PASSWORD}} --DB_USER root --DB_NAME ${{env.DB_DATABASE}}
->>>>>>> developer
