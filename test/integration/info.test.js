@@ -1,4 +1,4 @@
-process.env['DB_DATABASE'] = process.env.DB_DATABASE || 'shareameal-testdb';
+process.env['DB_DATABASE'] = process.env.DB_DATABASE || 'shareameal-db';
 
 const assert = require('assert');
 const chai = require('chai');
@@ -39,7 +39,7 @@ describe('UC-102 Informatie opvragen', function () {
 
         status.should.equal(404);
         message.should.be.a('string').that.is.equal('Endpoint not found');
-        data.should.be.an('object');
+        data.should.be.a('object');
 
         done();
       });

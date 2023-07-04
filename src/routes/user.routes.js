@@ -3,8 +3,6 @@ const router = express.Router();
 const userController = require('../controllers/user.controller');
 const authController = require('../controllers/authentication.controller');
 
-// Hier werk je de routes uit.
-
 // UC-201 Registreren als nieuwe user
 router.post('', userController.createUser);
 
@@ -20,6 +18,9 @@ router.get(
 
 //UC-204 Opvragen van usergegevens bij ID
 router.get('/:userId', authController.validateToken, userController.getUserId);
+
+//UC-205 Wijzigen van usergegevens
+router.put('/:userId', authController.validateToken, userController.updateUser);
 
 //UC-206 Verwijderen van user
 router.delete('/:userId', authController.validateToken, userController.deleteUser);

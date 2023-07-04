@@ -7,12 +7,13 @@ module.exports = {
 
   login(req, res, next) {
     logger.trace('login called');
+
     pool.getConnection((err, connection) => {
       if (err) {
         logger.error('Error getting connection from pool');
         next({
-          code: 500,
-          message: err.code
+          status: 500,
+          message: err.status
         });
       }
       if (connection) {
@@ -24,8 +25,9 @@ module.exports = {
           if (err) {
             logger.err(err.message);
             next({
-              code: 409,
-              message: err.message
+              status: 409,
+              message: err.message,
+              data: {}
             });
           }
           if (results) {
@@ -43,7 +45,7 @@ module.exports = {
                 (err, token) => {
                   if (token) {
                     res.status(200).json({
-                      code: 200,
+                      status: 200,
                       message: 'Login endpoint',
                       data: {
                         id,
@@ -56,9 +58,9 @@ module.exports = {
 
             } else {
               next({
-                code: 404,
-                message: 'User does not exist',
-                data: undefined
+                status: 404,
+                message: 'User not found',
+                data: {}
               })
             }
           }
@@ -74,22 +76,36 @@ module.exports = {
    */
   validateLogin(req, res, next) {
     // Verify that we receive the expected input
-    try {
-      assert(
-        typeof req.body.emailAdress === 'string',
-        'emailAdress must be a string.'
-      );
-      assert(
-        typeof req.body.password === 'string',
-        'password must be a string.'
-      );
-      next();
-    } catch (ex) {
-      res.status(400).json({
-        code: 400,
-        error: ex.toString(),
-        datetime: new Date().toISOString()
+    if (req.body.password === undefined || req.body.password === '') {
+      return res.status(400).json({
+        status: 400,
+        message: 'Invalid password.',
+        data: {},
       });
+    }
+    if (req.body.emailAdress === undefined || req.body.emailAdress === '') {
+      return res.status(400).json({
+        status: 400,
+        message: 'Invalid email address.',
+        data: {},
+      });
+    }
+
+    try {
+      logger.info('assert req body');
+      assert(typeof req.body.emailAdress === 'string', 'Invalid email address.');
+      assert(typeof req.body.password === 'string', 'Invalid email password.');
+      next();
+    } catch (err) {
+      logger.warn(err.message.toString());
+      logger.trace('assert failure');
+      next({
+        status: 400,
+        message: err.message.toString(),
+        data: {}
+      });
+    
+      return;
     }
   },
 
@@ -101,7 +117,7 @@ module.exports = {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
       next({
-        code: 401,
+        status: 401,
         message: 'Authorization header missing!',
         data: undefined
       });
@@ -112,8 +128,8 @@ module.exports = {
       jwt.verify(token, jwtSecretKey, (err, payload) => {
         if (err) {
           next({
-            code: 401,
-            message: 'Not authorized',
+            status: 401,
+            message: 'Invalid token.',
             data: undefined
           });
         }
