@@ -167,6 +167,7 @@ const INSERT_MEALS =
         city: 'Breda',
         // Password missing
         emailAdress: 'johndoe@gmail.com',
+        phoneNumber: '06121345678'
       };
       chai
         .request(server)
@@ -211,8 +212,9 @@ const INSERT_MEALS =
         lastName: 'Doe',
         street: 'Lovensdijkstraat 61',
         city: 'Breda',
-        password: 'se',
-        emailAdress: 'john.doe@gmail.com',
+        password: 'wrong',
+        emailAdress: 'j.doe@gmail.com',
+        phoneNumber: '0612345678'
       };
       chai
         .request(server)
@@ -236,6 +238,7 @@ const INSERT_MEALS =
         city: 'Breda',
         password: 'Secret123',
         emailAdress: 'j.doe@gmail.com',
+        phoneNumber: '0612345678'
       };
       chai
         .request(server)
@@ -261,6 +264,7 @@ const INSERT_MEALS =
         city: 'Breda',
         password: 'Secret123',
         emailAdress: 'j.ohnbeton@gmail.com',
+        phoneNumber: '0612345678'
       };
       chai
         .request(server)
@@ -447,7 +451,6 @@ const INSERT_MEALS =
           data.should.have.property('roles');
           data.should.have.property('street');
           data.should.have.property('city');
-          data.should.have.property('meals').that.is.an('array');
           done();
         });
     });

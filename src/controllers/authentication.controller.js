@@ -7,6 +7,7 @@ module.exports = {
 
   login(req, res, next) {
     logger.trace('login called');
+
     pool.getConnection((err, connection) => {
       if (err) {
         logger.error('Error getting connection from pool');
@@ -75,22 +76,44 @@ module.exports = {
    */
   validateLogin(req, res, next) {
     // Verify that we receive the expected input
+    if (req.body.password === undefined || req.body.password === '') {
+      return res.status(400).json({
+        status: 400,
+        message: 'Invalid password.',
+        data: {},
+      });
+    }
+    if (req.body.emailAdress === undefined || req.body.emailAdress === '') {
+      return res.status(400).json({
+        status: 400,
+        message: 'Invalid email address.',
+        data: {},
+      });
+    }
+
     try {
+      logger.info('assert req body');
+      assert(typeof req.body.emailAdress === 'string', 'Invalid email address.');
+      assert(typeof req.body.password === 'string', 'Invalid email password.');
       assert(
-        typeof req.body.emailAdress === 'string',
-        'emailAdress must be a string.'
+        /^[a-z]{1}\.[a-z]{2,}@[a-z]{2,}\.[a-z]{2,3}$/i.test(req.body.emailAdress),
+        'Invalid email address.'
       );
       assert(
-        typeof req.body.password === 'string',
-        'password must be a string.'
+        /^(?=.*[A-Z])(?=.*\d).{8,}$/.test(req.body.password),
+        'Invalid password.'
       );
       next();
-    } catch (ex) {
-      res.status(400).json({
+    } catch (err) {
+      logger.warn(err.message.toString());
+      logger.trace('assert failure');
+      next({
         status: 400,
-        error: ex.toString(),
-        datetime: new Date().toISOString()
+        message: err.message.toString(),
+        data: {}
       });
+    
+      return;
     }
   },
 

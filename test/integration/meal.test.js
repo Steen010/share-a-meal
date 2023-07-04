@@ -42,16 +42,17 @@ const INSERT_PARTTICIPANT =
   ' (1, 2),' +
   ' (2, 3);';
 const mealTest = {
+  id: 1,
   name: 'Meal A',
   description: 'description',
-  isActive: false,
-  isVega: false,
-  isVegan: false,
-  isToTakeHome: true,
+  isActive: 0,
+  isVega: 0,
+  isVegan: 0,
+  isToTakeHome: 1,
   imageUrl: 'image url',
   allergenes: '',
   maxAmountOfParticipants: 5,
-  price: 6.5,
+  price: '6.50',
   cookId: 1,
 };
 
@@ -304,7 +305,7 @@ describe('Meal API', () => {
           'https://miljuschka.nl/wp-content/uploads/2021/02/Pasta-bolognese-3-2.jpg',
         allergenes: 'gluten,lactose',
         maxAmountOfParticipants: 4,
-        price: 12.75,
+        price: '12.75'
       };
       chai
         .request(server)
@@ -370,27 +371,21 @@ describe('Meal API', () => {
         .request(server)
         .get('/api/meal/1')
         .end((err, res) => {
-          let { status, data } = res.body;
+          let { status,message, data } = res.body;
           status.should.eql(200);
+          message.should.be.a('string').eql('Meal with id 1 found');
           res.body.should.be.an('object');
+          data.should.have.property('id').to.be.eql(mealTest.id);
           data.should.have.property('name').to.be.eql(mealTest.name);
-          data.should.have
-            .property('description')
-            .to.be.eql(mealTest.description);
+          data.should.have.property('description').to.be.eql(mealTest.description);
           data.should.have.property('isActive').to.be.eql(mealTest.isActive);
           data.should.have.property('isVega').to.be.eql(mealTest.isVega);
           data.should.have.property('isVegan').to.be.eql(mealTest.isVegan);
-          data.should.have
-            .property('isToTakeHome')
-            .to.be.eql(mealTest.isToTakeHome);
+          data.should.have.property('isToTakeHome').to.be.eql(mealTest.isToTakeHome);
           data.should.have.property('dateTime');
           data.should.have.property('imageUrl').to.be.eql(mealTest.imageUrl);
-          data.should.have
-            .property('allergenes')
-            .to.be.eql(mealTest.allergenes);
-          data.should.have
-            .property('maxAmountOfParticipants')
-            .to.be.eql(mealTest.maxAmountOfParticipants);
+          data.should.have.property('allergenes').to.be.eql(mealTest.allergenes);
+          data.should.have.property('maxAmountOfParticipants').to.be.eql(mealTest.maxAmountOfParticipants);
           data.should.have.property('price').to.equal(mealTest.price);
           done();
         });

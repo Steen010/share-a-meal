@@ -139,42 +139,48 @@ const userController = {
     const userId = req.userId;
     logger.trace('user = ', user);
 
-    // Hier zie je hoe je binnenkomende meal info kunt valideren.
-    try {
-      logger.info('assert req body')
-      assert(typeof user.firstName === 'string', 'firstName must be a string');
-      assert(typeof user.lastName === 'string', 'lastName must be a string');
-      assert(typeof user.street === 'string', 'street must be a string');
-      assert(typeof user.city === 'string', 'city must be a string');
-      assert(typeof user.emailAdress === 'string', 'emailAdress must be a string');
-      // assert(user.password === '', 'password is missing.');
-      assert(typeof user.password === 'string', 'password must be a string');
-      assert(
-        /^[a-z]{1}\.[a-z]{2,}@[a-z]{2,}\.[a-z]{2,3}$/i.test(req.body.emailAdress),
-        'Invalid email address.'
-      );
-      assert(
-        /^(?=.*[A-Z])(?=.*\d).{8,}$/.test(req.body.password),
-        'Invalid password.'
-      );
-      assert(
-        /^06[-\s]?\d{8}$/.test(req.body.phoneNumber),
-        'phoneNumber must start with 06 have no space a "-" or a white space and be followed by 8 numbers'
-      );
-    } catch (err) {
-      logger.warn(err.message.toString());
-      // Als één van de asserts failt sturen we een error response.
-      logger.trace('assert failure')
+    const password = user.password;
+    logger.info(password);
+
+    if (password === undefined || password === '') {
       next({
         status: 400,
-        message: err.message.toString(),
+        message: 'password is missing.',
         data: {}
       });
-
-      // Nodejs is asynchroon. We willen niet dat de applicatie verder gaat
-      // wanneer er al een response is teruggestuurd.
-      return;
     }
+
+try {
+  logger.info('assert req body');
+  assert(typeof user.firstName === 'string', 'firstName must be a string');
+  assert(typeof user.lastName === 'string', 'lastName must be a string');
+  assert(typeof user.street === 'string', 'street must be a string');
+  assert(typeof user.city === 'string', 'city must be a string');
+  assert(typeof user.emailAdress === 'string', 'emailAdress must be a string');
+  assert(typeof user.password === 'string', 'password must be a string');
+  assert(
+    /^[a-z]{1}\.[a-z]{2,}@[a-z]{2,}\.[a-z]{2,3}$/i.test(req.body.emailAdress),
+    'Invalid email address.'
+  );
+  assert(
+    /^(?=.*[A-Z])(?=.*\d).{8,}$/.test(password),
+    'Invalid password.'
+  );
+  assert(
+    /^06[-\s]?\d{8}$/.test(req.body.phoneNumber),
+    'phoneNumber must start with 06, have no space or "-", and be followed by 8 numbers.'
+  );
+} catch (err) {
+  logger.warn(err.message.toString());
+  logger.trace('assert failure');
+  next({
+    status: 400,
+    message: err.message.toString(),
+    data: {}
+  });
+
+  return;
+}
 
     logger.trace('asserts completed')
 
@@ -204,11 +210,20 @@ const userController = {
               user.phoneNumber
             ], (err, results, fields) => {
               if (err) {
-                logger.error(err.message);
-                next({
-                  status: 409,
-                  message: err.message
-                });
+                if (err.code === 'ER_DUP_ENTRY') {
+                  // Send a custom error message to the user
+                  res.status(403).json({
+                    status: 403,
+                    message: 'A user already exists with this email address.',
+                    data: {},
+                  });
+                } else {
+                  logger.error(err.message);
+                  next({
+                    status: 409,
+                    message: err.message
+                  });
+                }
               }
               if (results) {
                 logger.trace('User successfully added, id = ', results.insertId);
@@ -221,9 +236,9 @@ const userController = {
                   emailAdress: user.emailAdress,
                   phoneNumber: user.phoneNumber
                 };
-                res.status(200).json({
-                  status: 200,
-                  message: 'New user created',
+                res.status(201).json({
+                  status: 201,
+                  message: 'User successfully registered.',
                   data: newUser
                 })
               }
@@ -268,7 +283,8 @@ const userController = {
               city: results[0].city,
               isActive: results[0].isActive,
               emailAdress: results[0].emailAdress,
-              phoneNumber: results[0].phoneNumber
+              phoneNumber: results[0].phoneNumber,
+              roles: results[0].roles
             };
   
             if (userId == reqUserId) {
@@ -434,57 +450,54 @@ const userController = {
     logger.trace('Deleting user id = ', reqUserId, ' by user id = ', userId);
   
     let preSqlStatement = 'SELECT * FROM `user` WHERE id=?';
-
+  
     pool.getConnection(function (err, conn) {
       if (err) {
         logger.error(err.status, err.syscall, err.address, err.port);
-        next({
+        return next({
           status: 500,
           message: err.status
         });
       }
-      if (conn) {
-        conn.query(preSqlStatement, [reqUserId], (err, results, fields) => {
-          if (err) {
-            logger.error(err.message);
-            next({
-              status: 409,
-              message: err.message
-            });
-          }
-          if (results.length === 0) {
-            logger.trace('Results ', results);
-            return res.status(404).json({
-              status: 404,
-              message: 'User with ID ' + reqUserId + ' does not exist',
-              data: {}
-            });
-          } 
-          if (userId != reqUserId) {
-            logger.trace(reqUserId, userId);
-            return res.status(403).json({
-              status: 403,
-              message: 'Logged in user is not allowed to delete this user.',
-              data: {}
-            });
-          }
-        });
-      }
-
-    
   
-    let sqlStatement = 'DELETE FROM `user` WHERE id=?';
+      conn.query(preSqlStatement, [reqUserId], (err, results, fields) => {
+        if (err) {
+          logger.error(err.message);
+          return next({
+            status: 409,
+            message: err.message
+          });
+        }
   
-    
-      if (conn) {
+        if (results.length === 0) {
+          logger.trace('Results ', results);
+          return res.status(404).json({
+            status: 404,
+            message: 'User with ID ' + reqUserId + ' does not exist',
+            data: {}
+          });
+        }
+  
+        if (userId != reqUserId) {
+          logger.trace(reqUserId, userId);
+          return res.status(403).json({
+            status: 403,
+            message: 'Logged in user is not allowed to delete this user.',
+            data: {}
+          });
+        }
+  
+        let sqlStatement = 'DELETE FROM `user` WHERE id=?';
+  
         conn.query(sqlStatement, [reqUserId], (err, results, fields) => {
           if (err) {
             logger.error(err.message);
-            next({
+            return next({
               status: 409,
               message: err.message
             });
           }
+  
           if (results && results.affectedRows === 1) {
             logger.trace('Results ', results);
             res.status(200).json({
@@ -492,9 +505,9 @@ const userController = {
               message: 'Gebruiker met ID ' + reqUserId + ' is verwijderd',
               data: {}
             });
-          } 
+          }
         });
-      }
+      });
     });
   }
 };

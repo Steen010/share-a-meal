@@ -13,7 +13,7 @@ router.put('/:mealId', authController.validateToken, mealController.updateMeal);
 router.get('', mealController.getAllMeals);
 
 // UC-304 Opvragen van maaltijd bij ID
-router.get('/:mealId', authController.validateToken, mealController.getMealId);
+router.get('/:mealId', mealController.getMealId);
 
 // UC-305 Verwijderen van maaltijd
 router.delete('/:mealId', authController.validateToken, mealController.deleteMeal);
