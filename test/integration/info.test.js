@@ -1,4 +1,4 @@
-process.env['DB_DATABASE'] = process.env.DB_DATABASE || 'shareameal-testdb';
+process.env['DB_DATABASE'] = process.env.DB_DATABASE || 'shareameal-db';
 
 const assert = require('assert');
 const chai = require('chai');

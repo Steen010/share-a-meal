@@ -95,14 +95,6 @@ module.exports = {
       logger.info('assert req body');
       assert(typeof req.body.emailAdress === 'string', 'Invalid email address.');
       assert(typeof req.body.password === 'string', 'Invalid email password.');
-      assert(
-        /^[a-z]{1}\.[a-z]{2,}@[a-z]{2,}\.[a-z]{2,3}$/i.test(req.body.emailAdress),
-        'Invalid email address.'
-      );
-      assert(
-        /^(?=.*[A-Z])(?=.*\d).{8,}$/.test(req.body.password),
-        'Invalid password.'
-      );
       next();
     } catch (err) {
       logger.warn(err.message.toString());

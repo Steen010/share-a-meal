@@ -76,7 +76,7 @@ const userController = {
       if (conn) {
         conn.query(sqlStatement, params, function (err, results, fields) {
           if (err) {
-            logger.err(err.message);
+            logger.error(err.message);
             next({
               status: 409,
               message: err.message

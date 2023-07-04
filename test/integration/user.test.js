@@ -85,8 +85,8 @@ const INSERT_MEALS =
         .end((err, res) => {
           res.body.should.be.an('object');
           let { data, message, status } = res.body;
-          status.should.equal(400);
-          message.should.be.a('string').equal('Invalid email address.');
+          status.should.equal(404);
+          message.should.be.a('string').equal('User not found');
           Object.keys(data).length.should.be.equal(0);
           done();
         });
@@ -104,8 +104,8 @@ const INSERT_MEALS =
         .end((err, res) => {
           res.body.should.be.an('object');
           let { status, message, data } = res.body;
-          status.should.equal(400);
-          message.should.be.a('string').equal(`Invalid password.`);
+          status.should.equal(404);
+          message.should.be.a('string').equal(`User not found`);
           Object.keys(data).length.should.be.equal(0);
           done();
         });
