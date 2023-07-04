@@ -1,4 +1,4 @@
-name: Testing and deployment
+name: Test on Developer
 
 on:
   push:
@@ -6,38 +6,20 @@ on:
       - developer
 
 jobs:
-  integrationtests:
+  test:
     runs-on: ubuntu-latest
-    env:
-      MYSQL_ROOT_PASSWORD: root # default root password to use must be 'root'
-      DB_HOST: "127.0.0.1"
-      DB_PORT: "3306"
-      DB_DATABASE: shareameal-db
-      DB_USER: root
-      DB_PASSWORD: root
-    services:
-      mysql:
-        image: mysql:5.7
-        ports:
-          - "3306:3306"
+
     steps:
-      - uses: actions/checkout@main
+      - name: Checkout Repository
+        uses: actions/checkout@v2
 
-      - name: Start MySQL service
-        run: docker run --name mysql -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=${{ env.MYSQL_ROOT_PASSWORD }} mysql:5.7
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
 
-      - name: Wait for MySQL service to start
-        run: sleep 10
+      - name: Install Dependencies
+        run: npm ci
 
-      - name: Import database script
-        run: |
-          mysql -h${{ env.DB_HOST }} -P${{ env.DB_PORT }} -uroot -p${{ env.DB_PASSWORD }} ${{ env.DB_DATABASE }} < share-a-meal.sql
-          mysql -h${{ env.DB_HOST }} -P${{ env.DB_PORT }} -uroot -p${{ env.DB_PASSWORD }} ${{ env.DB_DATABASE }} -e "SHOW TABLES;"
-
-      - name: npm install
-        run: |
-          npm install
-
-      - name: npm test
-        run: |
-          npm run test -- --DB_PASSWORD ${{ env.MYSQL_ROOT_PASSWORD }} --DB_USER root --DB_NAME ${{ env.DB_DATABASE }}
+      - name: Run Tests
+        run: npm run test -- --database=local
